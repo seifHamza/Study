@@ -156,7 +156,7 @@ async function resendVerification() {
         if (Toast) Toast.fire({ icon: 'success', title: 'Verification code resent! Check your inbox.' });
         showVerificationInputSection(); // يفتح مربع الكود لو مش مفتوح
     } else {
-        if (Toast) Toast.fire({ icon: 'error', title: 'Failed to send email. Check EmailJS settings.' });
+        
     }
 }
 
