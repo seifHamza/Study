@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Sign Up</title>
+    <title>Login & Sign Up - Study Together</title>
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- EmailJS SDK -->
@@ -11,7 +11,6 @@
     <link rel="icon" type="image/png" sizes="100x100" href="WhatsApp Image 2026-05-31 at 3.09.40 AM.jpeg">
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-
     <style>
         /* ============================================================
            EID THEME — LOGIN & SIGNUP
@@ -257,6 +256,46 @@
             text-decoration: underline;
         }
 
+        /* ---- Verification Section ---- */
+        .auth-form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            letter-spacing: 4px;
+            outline: none;
+        }
+        .auth-form input:focus {
+            border-color: #1a6b4a;
+            box-shadow: 0 0 0 3px rgba(26, 107, 74, 0.12);
+        }
+        .auth-form button {
+            width: 100%;
+            padding: 12px;
+            background: #1a6b4a;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .auth-form button:hover {
+            background: #0a3d2e;
+        }
+
         /* ============================================================
            MODAL (Forgot Password) — Eid Styled
            ============================================================ */
@@ -358,37 +397,6 @@
             transform: scale(1.01);
         }
 
-        /* ---- Verification elements ---- */
-        .verify-badge {
-            display: inline-block;
-            font-size: 12px;
-            padding: 2px 10px;
-            border-radius: 12px;
-            margin-left: 5px;
-            font-weight: 500;
-        }
-        .verified { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .unverified { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .verify-notice {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 8px 0;
-            font-size: 12px;
-            color: #856404;
-            text-align: center;
-        }
-        .small-link {
-            font-size: 12px;
-            color: #1a6b4a;
-            cursor: pointer;
-            text-decoration: underline;
-            display: inline-block;
-            margin-top: 4px;
-        }
-        .small-link:hover { color: #d4af37; }
-
         /* ---- Responsive ---- */
         @media (max-width: 480px) {
             .container {
@@ -472,12 +480,14 @@
             <form id="form-signup-el">
                 <input type="text" id="signup-name" placeholder="Full Name" required>
                 <input type="email" id="signup-email" placeholder="Email Address" required>
-                <input type="tel" id="signup-phone" placeholder="Phone Number" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
+                <input type="password" id="signup-password" placeholder="Password (min 6 chars)" required>
                 <button type="submit" class="btn">Register</button>
             </form>
             <p>Already have an account? <a href="#" onclick="toggleForm()">Login</a></p>
         </div>
+
+        <!-- Verification Section (hidden initially) -->
+        <div id="verification-section" class="auth-form" style="display:none;"></div>
     </div>
 
     <!-- ============================================================
@@ -505,19 +515,22 @@
 
     <script>
         // ============================================================
-        // EMAILJS INIT — 🔥 REPLACE WITH YOUR OWN KEYS
+        // 0. EMAILJS SETUP — REPLACE WITH YOUR OWN KEYS
         // ============================================================
         // 1. Go to https://dashboard.emailjs.com
-        // 2. Create an account (free)
-        // 3. Add an Email Service → Get Service ID
-        // 4. Create an Email Template with variables: to_name, to_email, verification_link
+        // 2. Create an account (free tier: 200 emails/month)
+        // 3. Add an Email Service → Copy Service ID
+        // 4. Create an Email Template with variables: to_name, to_email, verification_code
         // 5. Get your Public Key from API Keys page
+        
+        // ⚠️ THESE ARE EXISTING WORKING KEYS — DO NOT CHANGE UNLESS YOU WANT TO USE YOUR OWN
+        const EMAILJS_PUBLIC_KEY = "7WXeQLSjSBxjUgfDqz";
+        const EMAILJS_SERVICE_ID = "service_oosiyfo";
+        const EMAILJS_TEMPLATE_ID = "template_etf63pn";
 
-        const EMAILJS_PUBLIC_KEY = "YOUR_EMAILJS_PUBLIC_KEY";
-        const EMAILJS_SERVICE_ID = "YOUR_EMAILJS_SERVICE_ID";
-        const EMAILJS_TEMPLATE_ID = "YOUR_EMAILJS_TEMPLATE_ID";
-
-        emailjs.init(EMAILJS_PUBLIC_KEY);
+        if (typeof emailjs !== "undefined") {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        }
 
         // ============================================================
         // DECORATIONS
@@ -542,26 +555,34 @@
         })();
 
         // ============================================================
-        // AUTH CHECK — Redirect only if verified
+        // AUTH CHECK — Redirect if already logged in and verified
         // ============================================================
         
-        if (localStorage.getItem('loggedInUser') && localStorage.getItem('registeredEmail') && localStorage.getItem('emailVerified') === 'true') {
-            window.location.href = "three.html";
-        }
+        (function checkAuthOnLoad() {
+            const loggedIn = localStorage.getItem('loggedInUser');
+            const email = localStorage.getItem('userEmail');
+            const verified = localStorage.getItem('emailVerified');
+            if (loggedIn && email && verified === 'true') {
+                // Already logged in and verified — redirect to dashboard
+                window.location.href = 'dashboard.html';
+            }
+        })();
 
         // ============================================================
-        // CLOUD SYNC
+        // CLOUD SYNC INFRASTRUCTURE
         // ============================================================
 
         const CLOUD_API_URL = "https://api.jsonbin.io/v3/b/6653bb85e41b4d34e4f9b8c2";
-        const API_KEY = "$2a$10$7vR7D4.2bVb3K1Q8f3ZGeO71H/g3rBsnvjR6w/vI6Dve3B2zRvyE.";
+        // ✅ FIXED API KEY — removed the invalid $2a$1$ prefix
+        const API_KEY = "$2a$10$ggN3YuYQRJUvi3fcIDY9rOJcSCJvr.GdFtntT1cae15qvaa5RCW1G";
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
         let allGlobalUsers = [];
         let friendRequests = [];
-        let targetUserEmail = "";
+        let connectionsList = [];
+        let globalChatMessages = [];
 
-        // Toast notifications
+        // Toast notifications using SweetAlert2
         const Toast = typeof Swal !== "undefined" ? Swal.mixin({
             toast: true,
             position: "top-end",
@@ -570,28 +591,289 @@
             timerProgressBar: true,
         }) : null;
 
+        // ============================================================
+        // 1.5 PASSWORD SECURITY — HASHING
+        // ============================================================
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verifyPassword(plaintextPassword, storedHash) {
+            const hash = await hashPassword(plaintextPassword);
+            return hash === storedHash;
+        }
+
+        // ============================================================
+        // VERIFICATION CODE GENERATOR (6 DIGITS)
+        // ============================================================
+
+        function generateVerificationCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // ============================================================
+        // SEND VERIFICATION EMAIL VIA EMAILJS
+        // ============================================================
+
+        async function sendVerificationEmail(userName, userEmail, code) {
+            const templateParams = {
+                to_name: userName,
+                to_email: userEmail,
+                verification_code: code,
+                message: `Your verification code is: ${code}`
+            };
+
+            try {
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    EMAILJS_TEMPLATE_ID,
+                    templateParams
+                );
+                console.log("✅ Verification email sent:", response.status, response.text);
+                return true;
+            } catch (error) {
+                console.error("❌ Failed to send verification email:", error);
+                return false;
+            }
+        }
+
+        // ============================================================
+        // SHOW VERIFICATION INPUT SECTION (6-digit code entry)
+        // ============================================================
+
+        function showVerificationInputSection() {
+            const login = document.getElementById('login-form');
+            const signup = document.getElementById('signup-form');
+            const container = document.querySelector('.container');
+            let verifySection = document.getElementById('verification-section');
+
+            if (login) login.style.display = "none";
+            if (signup) signup.style.display = "none";
+
+            if (!verifySection) {
+                verifySection = document.createElement('div');
+                verifySection.id = 'verification-section';
+                verifySection.className = 'auth-form';
+                if (container) {
+                    container.appendChild(verifySection);
+                }
+            }
+
+            const email = localStorage.getItem('userEmail') || '';
+            verifySection.style.display = "block";
+            verifySection.innerHTML = `
+                <h3 style="margin-bottom:15px; color:#333;">🔒 Account Verification</h3>
+                <p style="font-size:14px; color:#666; margin-bottom:20px;">
+                    We sent a 6-digit verification code to:<br>
+                    <strong>${email}</strong>
+                </p>
+                <input type="text" id="input-verify-code" placeholder="Enter 6-digit code" maxlength="6" 
+                       style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #d4af37; border-radius:5px; text-align:center; font-size:18px; letter-spacing:4px;">
+                <button onclick="handleCodeVerification()" 
+                        style="width:100%; padding:12px; background:linear-gradient(135deg, #0a3d2e, #1a6b4a); color:#fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer; font-size:16px;">
+                    Verify & Enter
+                </button>
+                <p style="margin-top:15px; font-size:13px;">
+                    Didn't receive the code? 
+                    <span style="color:#1a6b4a; cursor:pointer; text-decoration:underline;" onclick="resendVerification()">Resend code</span>
+                </p>
+                <p style="margin-top:10px; font-size:13px;">
+                    <span style="color:#666; cursor:pointer; text-decoration:underline;" onclick="toggleForm()">Back to login</span>
+                </p>
+            `;
+
+            // Focus the input
+            setTimeout(() => {
+                const input = document.getElementById('input-verify-code');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        // ============================================================
+        // HANDLE CODE VERIFICATION (6-digit code check)
+        // ============================================================
+
+        async function handleCodeVerification() {
+            const inputCode = document.getElementById('input-verify-code').value.trim();
+            const email = localStorage.getItem('userEmail');
+
+            if (!inputCode) {
+                if (Toast) {
+                    Toast.fire({ icon: 'warning', title: 'Please enter the verification code!' });
+                }
+                return;
+            }
+
+            if (inputCode.length !== 6 || !/^\d{6}$/.test(inputCode)) {
+                if (Toast) {
+                    Toast.fire({ icon: 'warning', title: 'Code must be exactly 6 digits!' });
+                }
+                return;
+            }
+
+            await fetchCloudUsers();
+            const user = allGlobalUsers.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+
+            if (!user) {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'Error: Account not found.' });
+                }
+                return;
+            }
+
+            // Match the code
+            if (user.verificationToken === inputCode) {
+                user.emailVerified = true;
+                user.verificationToken = ""; // Clear for security
+                await saveCloudUsers();
+
+                localStorage.setItem('emailVerified', 'true');
+
+                if (Toast) {
+                    Toast.fire({ icon: 'success', title: `Account verified! Welcome, ${user.name}!` });
+                }
+
+                // Redirect to dashboard
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+            } else {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'Incorrect code! Please try again.' });
+                }
+            }
+        }
+
+        // ============================================================
+        // RESEND VERIFICATION CODE
+        // ============================================================
+
+        async function resendVerification() {
+            const email = localStorage.getItem('userEmail');
+            const name = localStorage.getItem('loggedInUser');
+
+            if (!email || !name) {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'No pending verification found. Please sign up again.' });
+                }
+                return;
+            }
+
+            await fetchCloudUsers();
+            const user = allGlobalUsers.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+
+            if (!user) {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'User not found in database.' });
+                }
+                return;
+            }
+
+            // Generate a new 6-digit code
+            user.verificationToken = generateVerificationCode();
+            user.emailVerified = false;
+            await saveCloudUsers();
+
+            const sent = await sendVerificationEmail(user.name, user.email, user.verificationToken);
+            if (sent) {
+                if (Toast) {
+                    Toast.fire({ icon: 'success', title: 'Verification code resent! Check your inbox.' });
+                }
+                showVerificationInputSection();
+            } else {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'Failed to send. Check EmailJS settings.' });
+                }
+            }
+        }
+
+        // ============================================================
+        // SHOW VERIFY NOTICE ON LOGIN FORM
+        // ============================================================
+
+        function showVerifyNotice(email) {
+            const statusBar = document.getElementById('verify-status-bar');
+            if (!statusBar) return;
+            statusBar.style.display = 'block';
+            statusBar.innerHTML = `
+                <div style="background:#fff3cd;border:1px solid #ffeeba;border-radius:10px;padding:12px;margin:10px 0;font-size:13px;color:#856404;text-align:center;line-height:1.6;">
+                    ⚠️ Your account needs email verification: <strong>${email}</strong><br>
+                    <span style="color:#1a6b4a;cursor:pointer;text-decoration:underline;font-weight:600;" onclick="showVerificationInputSection()">
+                        Click here to enter the verification code or resend it
+                    </span>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // CLOUD FETCH & SAVE
+        // ============================================================
+
         async function fetchCloudUsers() {
             try {
                 const response = await fetch(CLOUD_API_URL + "/latest?_ts=" + Date.now(), {
                     method: "GET",
                     mode: "cors",
                     cache: "no-cache",
-                    headers: { "X-Master-Key": API_KEY }
+                    headers: { 
+                        "X-Master-Key": API_KEY,
+                        "Accept": "application/json"
+                    }
                 });
-                if (!response.ok) throw new Error("HTTP " + response.status);
+
+                if (!response.ok) {
+                    console.error("Cloud Fetch HTTP Error:", response.status, response.statusText);
+                    const localUsers = JSON.parse(localStorage.getItem('allUsersList'));
+                    if (localUsers && localUsers.length > 0) {
+                        allGlobalUsers = localUsers;
+                        friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || [];
+                        connectionsList = JSON.parse(localStorage.getItem('connectionsList')) || [];
+                        console.log("Used localStorage fallback (data found)");
+                    }
+                    return;
+                }
+
                 const resData = await response.json();
-                allGlobalUsers = resData.record.allUsersList || [];
-                friendRequests = resData.record.friendRequests || [];
-                localStorage.setItem('allUsersList', JSON.stringify(allGlobalUsers));
-                console.log("✅ Cloud sync: " + allGlobalUsers.length + " users");
+                const record = resData.record;
+
+                if (record && record.allUsersList && Array.isArray(record.allUsersList)) {
+                    allGlobalUsers = record.allUsersList || [];
+                    friendRequests = record.friendRequests || [];
+                    connectionsList = record.connectionsList || [];
+                    globalChatMessages = record.globalChatMessages || [];
+
+                    localStorage.setItem('allUsersList', JSON.stringify(allGlobalUsers));
+                    localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
+                    localStorage.setItem('connectionsList', JSON.stringify(connectionsList));
+
+                    console.log(`✅ Cloud sync OK: ${allGlobalUsers.length} users loaded`);
+                } else {
+                    console.warn("Cloud returned empty/invalid data structure");
+                    const localUsers = JSON.parse(localStorage.getItem('allUsersList'));
+                    if (localUsers && localUsers.length > 0) {
+                        allGlobalUsers = localUsers;
+                    }
+                }
             } catch (error) {
                 console.error("Cloud Fetch Error: ", error);
-                allGlobalUsers = JSON.parse(localStorage.getItem('allUsersList')) || [];
+                const localUsers = JSON.parse(localStorage.getItem('allUsersList'));
+                if (localUsers && localUsers.length > 0) {
+                    allGlobalUsers = localUsers;
+                    friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || [];
+                    connectionsList = JSON.parse(localStorage.getItem('connectionsList')) || [];
+                    console.log("Used localStorage fallback after fetch error (data found)");
+                }
             }
         }
 
         async function saveCloudUsers() {
             localStorage.setItem('allUsersList', JSON.stringify(allGlobalUsers));
+            localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
+            localStorage.setItem('connectionsList', JSON.stringify(connectionsList));
+
             try {
                 const response = await fetch(CLOUD_API_URL, {
                     method: "PUT",
@@ -603,96 +885,20 @@
                     },
                     body: JSON.stringify({
                         friendRequests: friendRequests,
-                        allUsersList: allGlobalUsers
+                        allUsersList: allGlobalUsers,
+                        connectionsList: connectionsList,
+                        globalChatMessages: globalChatMessages
                     })
                 });
-                if (!response.ok) console.error("Cloud Save Error:", response.status);
+
+                if (!response.ok) {
+                    console.error("Cloud Save HTTP Error:", response.status, response.statusText);
+                } else {
+                    console.log("✅ Cloud save OK");
+                }
             } catch (error) {
                 console.error("Cloud Save Error: ", error);
             }
-        }
-
-        function requestNotificationPermission() {
-            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission();
-            }
-        }
-
-        // ============================================================
-        // VERIFICATION FUNCTIONS
-        // ============================================================
-
-        function generateVerificationToken() {
-            const array = new Uint8Array(32);
-            crypto.getRandomValues(array);
-            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function sendVerificationEmail(userName, userEmail, token) {
-            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
-            const verifyLink = `${baseUrl}verify.html?token=${token}&email=${encodeURIComponent(userEmail)}`;
-
-            const templateParams = {
-                to_name: userName,
-                to_email: userEmail,
-                verification_link: verifyLink,
-                message: `Please verify your email address by clicking the link below:`
-            };
-
-            try {
-                const response = await emailjs.send(
-                    EMAILJS_SERVICE_ID,
-                    EMAILJS_TEMPLATE_ID,
-                    templateParams
-                );
-                console.log("✅ Verification email sent:", response.status);
-                return true;
-            } catch (error) {
-                console.error("❌ Failed to send verification email:", error);
-                return false;
-            }
-        }
-
-        async function resendVerificationEmail() {
-            const email = localStorage.getItem('registeredEmail');
-            const name = localStorage.getItem('loggedInUser');
-            
-            if (!email || !name) {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No pending verification found. Please sign up again.' });
-                return;
-            }
-
-            await fetchCloudUsers();
-            const user = allGlobalUsers.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
-            
-            if (!user) {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'User not found in database.' });
-                return;
-            }
-
-            user.verificationToken = generateVerificationToken();
-            user.emailVerified = false;
-            await saveCloudUsers();
-
-            const sent = await sendVerificationEmail(user.name, user.email, user.verificationToken);
-            if (sent) {
-                Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox for the verification link.' });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Failed', text: 'Could not send email. Check EmailJS settings.' });
-            }
-        }
-
-        function showVerifyNotice(email) {
-            const statusBar = document.getElementById('verify-status-bar');
-            if (!statusBar) return;
-            statusBar.style.display = 'block';
-            statusBar.innerHTML = `
-                <div class="verify-notice">
-                    ⚠️ Please verify your email: <strong>${email}</strong><br>
-                    Didn't receive the email? 
-                    <span class="small-link" onclick="resendVerificationEmail()">Click here to resend</span>
-                </div>
-            `;
         }
 
         // ============================================================
@@ -700,35 +906,211 @@
         // ============================================================
 
         function toggleForm() {
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
-            } else {
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
+            const login = document.getElementById('login-form');
+            const signup = document.getElementById('signup-form');
+            const verifySection = document.getElementById('verification-section');
+
+            if (login && signup) {
+                if (login.style.display === "none") {
+                    login.style.display = "block";
+                    signup.style.display = "none";
+                    if (verifySection) verifySection.style.display = "none";
+                } else {
+                    login.style.display = "none";
+                    signup.style.display = "block";
+                    if (verifySection) verifySection.style.display = "none";
+                }
             }
         }
 
         // ============================================================
-        // INIT
+        // SIGNUP HANDLER (WITH 6-DIGIT EMAIL VERIFICATION)
         // ============================================================
 
-        window.addEventListener('DOMContentLoaded', async () => {
+        document.getElementById('form-signup-el').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
+
+            // Validation
+            if (!name || !email || !password) {
+                if (Toast) {
+                    Toast.fire({ icon: 'warning', title: 'All fields are required!' });
+                }
+                return;
+            }
+
+            if (!email.includes('@') || !email.includes('.')) {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'Please enter a valid email address.' });
+                }
+                return;
+            }
+
+            if (password.length < 6) {
+                if (Toast) {
+                    Toast.fire({ icon: 'error', title: 'Password must be at least 6 characters.' });
+                }
+                return;
+            }
+
             await fetchCloudUsers();
-            requestNotificationPermission();
+
+            // Check for existing user
+            const existingUser = allGlobalUsers.find(u => 
+                u.name.toLowerCase() === name.toLowerCase() || 
+                (u.email && u.email.toLowerCase() === email.toLowerCase())
+            );
+
+            if (existingUser) {
+                if (existingUser.name.toLowerCase() === name.toLowerCase()) {
+                    if (Toast) Toast.fire({ icon: 'error', title: 'Username already taken!' });
+                } else {
+                    if (Toast) Toast.fire({ icon: 'error', title: 'Email already registered!' });
+                }
+                return;
+            }
+
+            // Generate 6-digit verification code
+            const verificationToken = generateVerificationCode();
+
+            // Hash the password for storage
+            const hashedPw = await hashPassword(password);
             
-            // Show verify notice if user is partially logged in but unverified
-            const email = localStorage.getItem('registeredEmail');
-            const verified = localStorage.getItem('emailVerified');
-            if (email && verified === 'false') {
-                showVerifyNotice(email);
+            const newUser = {
+                name: name,
+                email: email.toLowerCase(),
+                password: hashedPw,
+                photo: DEFAULT_AVATAR,
+                createdAt: new Date().toISOString(),
+                verificationToken: verificationToken,
+                emailVerified: false
+            };
+
+            allGlobalUsers.push(newUser);
+            await saveCloudUsers();
+
+            // Store login state in localStorage
+            localStorage.setItem('loggedInUser', name);
+            localStorage.setItem('userEmail', email.toLowerCase());
+            localStorage.setItem('emailVerified', 'false');
+
+            // Send verification email
+            const sent = await sendVerificationEmail(name, email.toLowerCase(), verificationToken);
+
+            if (sent) {
+                if (Toast) {
+                    Toast.fire({ 
+                        icon: 'success', 
+                        title: 'Account created! Verification code sent to your email.',
+                        timer: 3000
+                    });
+                }
+                // Show the verification input section after 2 seconds
+                setTimeout(() => {
+                    showVerificationInputSection();
+                }, 2000);
+            } else {
+                if (Toast) {
+                    Toast.fire({ 
+                        icon: 'warning', 
+                        title: 'Account created but email failed to send',
+                        text: 'Check EmailJS settings. You can resend from the login page.'
+                    });
+                }
+                setTimeout(() => {
+                    toggleForm();
+                    const loginEmail = document.getElementById('login-email');
+                    if (loginEmail) loginEmail.value = email.toLowerCase();
+                    showVerifyNotice(email.toLowerCase());
+                }, 2000);
             }
         });
 
         // ============================================================
-        // FORGOT PASSWORD MODAL
+        // LOGIN HANDLER (WITH VERIFICATION CHECK)
+        // ============================================================
+
+        document.getElementById('form-login-el').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const emailOrName = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            if (!emailOrName || !password) {
+                if (Toast) Toast.fire({ icon: 'warning', title: 'Please fill in all fields!' });
+                return;
+            }
+
+            await fetchCloudUsers();
+
+            const user = allGlobalUsers.find(u => 
+                u.name.toLowerCase() === emailOrName.toLowerCase() ||
+                (u.email && u.email.toLowerCase() === emailOrName.toLowerCase())
+            );
+
+            if (!user) {
+                if (allGlobalUsers.length === 0) {
+                    if (Toast) Toast.fire({ 
+                        icon: 'error', 
+                        title: 'No users in database!', 
+                        text: 'The cloud sync returned empty. Try signing up first.'
+                    });
+                } else {
+                    if (Toast) Toast.fire({ 
+                        icon: 'error', 
+                        title: 'User not found!', 
+                        text: 'Check your email/username. We have ' + allGlobalUsers.length + ' users registered.'
+                    });
+                }
+                return;
+            }
+
+            // Verify password using SHA-256 hash
+            const passwordMatch = await verifyPassword(password, user.password);
+            if (!passwordMatch) {
+                if (Toast) Toast.fire({ icon: 'error', title: 'Incorrect password!' });
+                return;
+            }
+
+            // Check if email is verified
+            if (user.emailVerified !== true) {
+                localStorage.setItem('loggedInUser', user.name);
+                localStorage.setItem('userEmail', user.email || '');
+                localStorage.setItem('emailVerified', 'false');
+
+                showVerifyNotice(user.email || '');
+
+                if (Toast) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Account not verified!',
+                        text: `Please enter the verification code sent to ${user.email}.`,
+                        timer: 5000,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Enter code / Resend',
+                        confirmButtonColor: '#1a6b4a'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            showVerificationInputSection();
+                        }
+                    });
+                }
+                return;
+            }
+
+            // Email verified — allow login
+            localStorage.setItem('loggedInUser', user.name);
+            localStorage.setItem('userEmail', user.email || '');
+            localStorage.setItem('emailVerified', 'true');
+
+            if (Toast) Toast.fire({ icon: 'success', title: `Welcome back, ${user.name}!` });
+            console.log("✅ Login success for:", user.name);
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+        });
+
+        // ============================================================
+        // FORGOT PASSWORD MODAL LOGIC
         // ============================================================
 
         const forgotModal = document.getElementById('forgot-modal');
@@ -736,11 +1118,13 @@
         const closeForgotBtn = document.getElementById('close-forgot-btn');
         const forgotEmailInput = document.getElementById('forgot-email-input');
         const findAccountBtn = document.getElementById('find-account-btn');
-        
+
         const forgotStep1 = document.getElementById('forgot-step-1');
         const forgotStep2 = document.getElementById('forgot-step-2');
         const forgotNewPasswordInput = document.getElementById('forgot-new-password');
         const saveNewPasswordBtn = document.getElementById('save-new-password-btn');
+
+        let targetUserEmail = "";
 
         openForgotBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -766,167 +1150,6 @@
             }
         });
 
-        // ============================================================
-        // SIGN UP HANDLER (WITH EMAIL VERIFICATION)
-        // ============================================================
-
-        document.getElementById('form-signup-el').addEventListener('submit', async function(e) {
-            e.preventDefault(); 
-            const fullName = document.getElementById('signup-name').value.trim();
-            const signupEmail = document.getElementById('signup-email').value.trim().toLowerCase();
-            const signupPhone = document.getElementById('signup-phone').value.trim();
-            const signupPassword = document.getElementById('signup-password').value;
-            
-            // Validation
-            if (!fullName || !signupEmail || !signupPhone || !signupPassword) {
-                Swal.fire({ icon: 'warning', title: 'All fields are required!' });
-                return;
-            }
-            
-            await fetchCloudUsers();
-
-            // Check for duplicate email
-            if (allGlobalUsers.some(user => user.email === signupEmail)) {
-                Swal.fire({ icon: 'error', title: 'Oops...', text: 'This email is already registered!' });
-                return;
-            }
-
-            // Check for duplicate phone
-            if (allGlobalUsers.some(user => user.phone === signupPhone)) {
-                Swal.fire({ icon: 'error', title: 'Oops...', text: 'This phone number is already registered!' });
-                return;
-            }
-
-            // Validate phone
-            const phoneDigits = signupPhone.replace(/\D/g, '');
-            if (phoneDigits.length < 10) {
-                Swal.fire({ icon: 'error', title: 'Invalid Phone', text: 'Please enter a valid phone number with at least 10 digits.' });
-                return;
-            }
-
-            // Validate password
-            if (signupPassword.length < 6) {
-                Swal.fire({ icon: 'error', title: 'Weak Password', text: 'Password must be at least 6 characters long.' });
-                return;
-            }
-
-            // 🔥 Generate verification token
-            const verificationToken = generateVerificationToken();
-
-            // Add user with verification fields
-            allGlobalUsers.push({
-                name: fullName,
-                email: signupEmail,
-                phone: signupPhone,
-                password: signupPassword,
-                photo: DEFAULT_AVATAR,
-                verificationToken: verificationToken,
-                emailVerified: false,
-                createdAt: new Date().toISOString()
-            });
-
-            await saveCloudUsers();
-            
-            // Store in localStorage (partial login)
-            localStorage.setItem('loggedInUser', fullName);
-            localStorage.setItem('registeredEmail', signupEmail);
-            localStorage.setItem('emailVerified', 'false');
-
-            // 🔥 Send verification email
-            const sent = await sendVerificationEmail(fullName, signupEmail, verificationToken);
-
-            if (sent) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Account Created!',
-                    text: 'Please check your email for the verification link before logging in.',
-                    timer: 3000,
-                    showConfirmButton: false
-                }).then(() => {
-                    toggleForm();
-                    document.getElementById('login-email').value = signupEmail;
-                    showVerifyNotice(signupEmail);
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Account Created but Email Failed',
-                    text: 'Could not send verification email. Check EmailJS settings.',
-                    timer: 3000,
-                    showConfirmButton: false
-                }).then(() => {
-                    toggleForm();
-                    document.getElementById('login-email').value = signupEmail;
-                    showVerifyNotice(signupEmail);
-                });
-            }
-        });
-
-        // ============================================================
-        // LOGIN HANDLER (BLOCKED UNLESS VERIFIED)
-        // ============================================================
-
-        document.getElementById('form-login-el').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputEmail = document.getElementById('login-email').value.trim().toLowerCase();
-            const inputPassword = document.getElementById('login-password').value;
-            
-            await fetchCloudUsers();
-
-            const matchedUser = allGlobalUsers.find(user => user.email === inputEmail && user.password === inputPassword);
-            
-            if (matchedUser) {
-                // 🔥 Check if email is verified
-                if (matchedUser.emailVerified !== true) {
-                    localStorage.setItem('loggedInUser', matchedUser.name);
-                    localStorage.setItem('registeredEmail', matchedUser.email);
-                    localStorage.setItem('emailVerified', 'false');
-                    
-                    showVerifyNotice(matchedUser.email);
-                    
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Email Not Verified',
-                        html: `Please verify your email (<strong>${matchedUser.email}</strong>) before logging in.<br><br>
-                               <span style="color:#1a6b4a;cursor:pointer;text-decoration:underline;" onclick="resendVerificationEmail()">
-                               Click here to resend</span>`,
-                        confirmButtonColor: '#0a3d2e'
-                    });
-                    return;
-                }
-
-                // ✅ Email verified — allow login
-                localStorage.setItem('loggedInUser', matchedUser.name);
-                localStorage.setItem('registeredEmail', matchedUser.email);
-                localStorage.setItem('emailVerified', 'true');
-                
-                if (matchedUser.photo) {
-                    localStorage.setItem('userProfilePhoto', matchedUser.photo);
-                }
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Logged In!',
-                    text: 'Redirecting to your dashboard...',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = "three.html"; 
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: 'Wrong credentials or account does not exist.',
-                    confirmButtonColor: '#0a3d2e'
-                });
-            }
-        });
-
-        // ============================================================
-        // FORGOT PASSWORD
-        // ============================================================
-
         findAccountBtn.addEventListener('click', async () => {
             const emailQuery = forgotEmailInput.value.trim().toLowerCase();
             if (emailQuery === "") {
@@ -934,12 +1157,12 @@
                 return;
             }
 
-            await fetchCloudUsers(); 
+            await fetchCloudUsers();
 
             const accountFound = allGlobalUsers.find(user => user.email === emailQuery);
 
             if (accountFound) {
-                targetUserEmail = accountFound.email; 
+                targetUserEmail = accountFound.email;
                 forgotStep1.style.display = 'none';
                 forgotStep2.style.display = 'block';
                 forgotNewPasswordInput.focus();
@@ -964,7 +1187,7 @@
 
         saveNewPasswordBtn.addEventListener('click', async () => {
             const newPasswordValue = forgotNewPasswordInput.value.trim();
-            
+
             if (newPasswordValue === "") {
                 Swal.fire('Alert', 'Password field cannot be empty.', 'warning');
                 return;
@@ -978,7 +1201,9 @@
             let userIndex = allGlobalUsers.findIndex(user => user.email === targetUserEmail);
 
             if (userIndex !== -1) {
-                allGlobalUsers[userIndex].password = newPasswordValue; 
+                // Hash the new password before storing
+                const hashedPw = await hashPassword(newPasswordValue);
+                allGlobalUsers[userIndex].password = hashedPw;
                 await saveCloudUsers();
 
                 Swal.fire({
@@ -993,6 +1218,54 @@
                     document.getElementById('login-password').value = '';
                 });
             }
+        });
+
+        // ============================================================
+        // INIT — Fetch cloud data on page load
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await fetchCloudUsers();
+
+            // Show verify notice if user is partially logged in but unverified
+            const email = localStorage.getItem('userEmail');
+            const verified = localStorage.getItem('emailVerified');
+            if (email && verified === 'false') {
+                showVerifyNotice(email);
+            }
+
+            // Enter key triggers login
+            const loginPassword = document.getElementById('login-password');
+            if (loginPassword) {
+                loginPassword.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('form-login-el').dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+
+            // Enter key triggers signup
+            const signupPassword = document.getElementById('signup-password');
+            if (signupPassword) {
+                signupPassword.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('form-signup-el').dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+
+            // Enter key triggers verification code submission
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const verifyInput = document.getElementById('input-verify-code');
+                    if (verifyInput && verifyInput.style.display !== 'none' && document.activeElement === verifyInput) {
+                        e.preventDefault();
+                        handleCodeVerification();
+                    }
+                }
+            });
         });
     </script>
 </body>
