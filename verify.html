@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Amiri', Arial, sans-serif;
+            background: linear-gradient(160deg, #0a3d2e 0%, #1a6b4a 40%, #e8d5a3 75%, #f7e9c3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .verify-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 50px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            width: 420px;
+            max-width: 90%;
+            text-align: center;
+            border: 2px solid rgba(212, 175, 55, 0.5);
+        }
+        .verify-card h1 { color: #0a3d2e; margin-bottom: 20px; font-family: 'Amiri', serif; }
+        .verify-card p { color: #5a6a5a; margin-bottom: 15px; line-height: 1.7; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a6b4a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #0a3d2e, #1a6b4a);
+            color: #f7e9c3;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+        .btn:hover { background: linear-gradient(135deg, #1a6b4a, #0a3d2e); transform: scale(1.01); }
+        .icon { font-size: 64px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="verify-card" id="verify-card">
+        <div id="loading-state">
+            <div class="spinner"></div>
+            <h1>Verifying...</h1>
+            <p>Please wait while we verify your email address.</p>
+        </div>
+        <div id="success-state" style="display:none;">
+            <div class="icon">✅</div>
+            <h1>Email Verified!</h1>
+            <p>Your email has been successfully verified. You can now log in to your account.</p>
+            <a href="index.html" class="btn">Go to Login</a>
+        </div>
+        <div id="error-state" style="display:none;">
+            <div class="icon">❌</div>
+            <h1>Verification Failed</h1>
+            <p id="error-message">The verification link is invalid or has expired.</p>
+            <a href="index.html" class="btn">Back to Login</a>
+        </div>
+    </div>
+
+    <script>
+        const CLOUD_API_URL = "https://api.jsonbin.io/v3/b/6653bb85e41b4d34e4f9b8c2";
+        const API_KEY = "$2a$10$7vR7D4.2bVb3K1Q8f3ZGeO71H/g3rBsnvjR6w/vI6Dve3B2zRvyE.";
+
+        async function verifyEmail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const email = urlParams.get('email');
+
+            if (!token || !email) {
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
+                document.getElementById('error-message').textContent = 'Missing verification parameters.';
+                return;
+            }
+
+            try {
+                const response = await fetch(CLOUD_API_URL + "/latest?_ts=" + Date.now(), {
+                    method: "GET", mode: "cors", cache: "no-cache",
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                const resData = await response.json();
+                const allUsers = resData.record.allUsersList || [];
+                
+                const userIndex = allUsers.findIndex(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+                
+                if (userIndex === -1) {
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('error-state').style.display = 'block';
+                    document.getElementById('error-message').textContent = 'No account found with this email.';
+                    return;
+                }
+
+                const user = allUsers[userIndex];
+
+                if (user.emailVerified === true) {
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('success-state').style.display = 'block';
+                    localStorage.setItem('emailVerified', 'true');
+                    return;
+                }
+
+                if (user.verificationToken !== token) {
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('error-state').style.display = 'block';
+                    document.getElementById('error-message').textContent = 'Invalid or expired verification link.';
+                    return;
+                }
+
+                allUsers[userIndex].emailVerified = true;
+                allUsers[userIndex].verificationToken = null;
+
+                await fetch(CLOUD_API_URL, {
+                    method: "PUT", mode: "cors", cache: "no-store",
+                    headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
+                    body: JSON.stringify(resData.record)
+                });
+
+                localStorage.setItem('emailVerified', 'true');
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('success-state').style.display = 'block';
+
+            } catch (error) {
+                console.error("Verification error:", error);
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
+                document.getElementById('error-message').textContent = 'An error occurred. Please try again.';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', verifyEmail);
+    </script>
+</body>
+</html>

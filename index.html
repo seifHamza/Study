@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <link rel="icon" type="image/png" sizes="100x100" href="WhatsApp Image 2026-05-31 at 3.09.40 AM.jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+
+    <style>
+        /* ============================================================
+           EID THEME — LOGIN & SIGNUP
+           ============================================================ */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Amiri', Arial, sans-serif;
+            background: linear-gradient(160deg, #0a3d2e 0%, #1a6b4a 40%, #e8d5a3 75%, #f7e9c3 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ---- Brand Name Top Left ---- */
+        .brand-top-left {
+            position: fixed;
+            top: 18px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 110;
+            background: rgba(10, 61, 46, 0.35);
+            padding: 6px 18px;
+            border-radius: 30px;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        .brand-top-left .brand-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+        .brand-top-left .brand-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: #f7e9c3;
+            text-shadow: 0 2px 12px rgba(10, 61, 46, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* ---- Floating Particles ---- */
+        .eid-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.5; }
+            90%  { opacity: 0.3; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ---- Crescent Moon Overlay ---- */
+        .crescent-bg {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 180px;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ---- Lantern Decorations ---- */
+        .lantern-decor {
+            position: fixed;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.07;
+            font-size: 80px;
+        }
+        .lantern-decor.l1 { top: 5%; left: 3%; }
+        .lantern-decor.l2 { top: 5%; right: 3%; }
+        .lantern-decor.l3 { bottom: 5%; left: 5%; }
+        .lantern-decor.l4 { bottom: 5%; right: 5%; }
+
+        /* ---- Eid Greeting Floating ---- */
+        .eid-greeting-float {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #d4af37, #f7e9c3);
+            color: #0a3d2e;
+            padding: 8px 28px;
+            border-radius: 40px;
+            font-family: 'Amiri', serif;
+            font-size: 20px;
+            font-weight: 700;
+            z-index: 100;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+            border: 2px solid #d4af37;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* ---- Main Container ---- */
+        .container {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            width: 380px;
+            position: relative;
+            z-index: 10;
+            border: 2px solid rgba(212, 175, 55, 0.5);
+            transition: all 0.3s;
+        }
+        .container::before {
+            content: "\01F3EE";
+            position: absolute;
+            top: -18px;
+            left: -12px;
+            font-size: 30px;
+            opacity: 0.3;
+        }
+        .container::after {
+            content: "\01F3EE";
+            position: absolute;
+            bottom: -18px;
+            right: -12px;
+            font-size: 30px;
+            opacity: 0.3;
+        }
+
+        .container h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #0a3d2e;
+            font-family: 'Amiri', serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .container h2::after {
+            content: " \261A";
+            font-size: 18px;
+            opacity: 0.4;
+        }
+
+        .container input[type="text"],
+        .container input[type="email"],
+        .container input[type="tel"],
+        .container input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+            color: #0a3d2e;
+            transition: 0.2s;
+        }
+        .container input:focus {
+            border-color: #1a6b4a;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 107, 74, 0.12);
+        }
+        .container input::placeholder {
+            color: #8a7a5a;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0a3d2e, #1a6b4a);
+            color: #f7e9c3;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: 0.2s;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #1a6b4a, #0a3d2e);
+            transform: scale(1.01);
+            box-shadow: 0 6px 20px rgba(10, 61, 46, 0.3);
+        }
+
+        p {
+            font-size: 14px;
+            text-align: center;
+            margin-top: 18px;
+            color: #5a6a5a;
+        }
+        p a {
+            color: #1a6b4a;
+            text-decoration: none;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        p a:hover {
+            color: #d4af37;
+            text-decoration: underline;
+        }
+
+        /* ---- Forgot Password Link ---- */
+        .forgot-link {
+            display: block;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #b8860b;
+            text-decoration: none;
+            text-align: right;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .forgot-link:hover {
+            color: #d4af37;
+            text-decoration: underline;
+        }
+
+        /* ============================================================
+           MODAL (Forgot Password) — Eid Styled
+           ============================================================ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 61, 46, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: linear-gradient(160deg, #faf5e8, #fff8e7);
+            padding: 30px;
+            border-radius: 24px;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            border: 2px solid #d4af37;
+        }
+        .modal-content::before {
+            content: "\01F511";
+            position: absolute;
+            top: 12px;
+            left: 18px;
+            font-size: 18px;
+            opacity: 0.3;
+        }
+        .modal-content h3 {
+            font-family: 'Amiri', serif;
+            color: #0a3d2e;
+            font-size: 22px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            font-size: 22px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-weight: bold;
+            color: #0a3d2e;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .close-btn:hover {
+            background: rgba(10, 61, 46, 0.08);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            margin-top: 14px;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+            color: #0a3d2e;
+            transition: 0.2s;
+        }
+        .modal-input:focus {
+            border-color: #1a6b4a;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 107, 74, 0.12);
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, #d4af37, #b8962f);
+            color: #0a3d2e;
+            border: none;
+            padding: 14px;
+            margin-top: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 15px;
+            font-weight: 700;
+            transition: 0.2s;
+            font-family: 'Poppins', sans-serif;
+            border: 1px solid #f7e9c3;
+        }
+        .modal-btn:hover {
+            background: linear-gradient(135deg, #f7e9c3, #d4af37);
+            transform: scale(1.01);
+        }
+
+        /* ---- Verification elements ---- */
+        .verify-badge {
+            display: inline-block;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: 5px;
+            font-weight: 500;
+        }
+        .verified { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .unverified { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .verify-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 12px;
+            color: #856404;
+            text-align: center;
+        }
+        .small-link {
+            font-size: 12px;
+            color: #1a6b4a;
+            cursor: pointer;
+            text-decoration: underline;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .small-link:hover { color: #d4af37; }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 480px) {
+            .container {
+                width: 92%;
+                padding: 24px 20px;
+            }
+            .eid-greeting-float {
+                font-size: 14px;
+                padding: 6px 16px;
+                top: 10px;
+            }
+            .brand-top-left {
+                font-size: 16px;
+                padding: 4px 14px;
+                top: 10px;
+                left: 12px;
+                gap: 8px;
+            }
+            .brand-top-left .brand-icon {
+                font-size: 18px;
+            }
+            .brand-top-left .brand-text {
+                font-size: 16px;
+            }
+            .crescent-bg {
+                font-size: 100px;
+                opacity: 0.025;
+            }
+            .lantern-decor {
+                font-size: 50px;
+                opacity: 0.05;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Brand Name Top Left -->
+    <div class="brand-top-left">
+        <span class="brand-icon">📚</span>
+        <span class="brand-text">Study Together</span>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="eid-particles" id="eid-particles"></div>
+
+    <!-- Crescent Moon -->
+    <div class="crescent-bg">☪</div>
+
+    <!-- Lanterns -->
+    <div class="lantern-decor l1">🏮</div>
+    <div class="lantern-decor l2">🏮</div>
+    <div class="lantern-decor l3">🏮</div>
+    <div class="lantern-decor l4">🏮</div>
+
+    <!-- Floating Eid Greeting -->
+    <div class="eid-greeting-float">✨ Eid Mubarak ✨</div>
+
+    <!-- ============================================================
+         MAIN FORM CONTAINER
+         ============================================================ -->
+    <div class="container">
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Welcome Back</h2>
+            <div id="verify-status-bar" style="display:none;"></div>
+            <form id="form-login-el">
+                <input type="email" id="login-email" placeholder="Email Address" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                
+                <a href="#" id="open-forgot-btn" class="forgot-link">Forgot Password?</a>
+                
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <p>Don't have an account? <a href="#" onclick="toggleForm()">Sign Up</a></p>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form" style="display: none;">
+            <h2>Join the Celebration</h2>
+            <form id="form-signup-el">
+                <input type="text" id="signup-name" placeholder="Full Name" required>
+                <input type="email" id="signup-email" placeholder="Email Address" required>
+                <input type="tel" id="signup-phone" placeholder="Phone Number" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <button type="submit" class="btn">Register</button>
+            </form>
+            <p>Already have an account? <a href="#" onclick="toggleForm()">Login</a></p>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         FORGOT PASSWORD MODAL
+         ============================================================ -->
+    <div id="forgot-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-forgot-btn">&times;</button>
+            
+            <div id="forgot-step-1">
+                <h3 style="margin-top: 5px;">Reset Password 🔑</h3>
+                <p style="font-size: 13px; color: #5a6a5a; margin-top: 5px;">Enter your registered email address to reset your password.</p>
+                <input type="email" id="forgot-email-input" class="modal-input" placeholder="Type your registered Email...">
+                <button id="find-account-btn" class="modal-btn">Find Account</button>
+            </div>
+
+            <div id="forgot-step-2" style="display: none;">
+                <h3 style="margin-top: 5px;">New Credentials 🔒</h3>
+                <p style="font-size: 13px; color: #1a6b4a; margin-top: 5px; font-weight: bold;">Account Verified! Enter your new password.</p>
+                <input type="password" id="forgot-new-password" class="modal-input" placeholder="Type your new password...">
+                <button id="save-new-password-btn" class="modal-btn" style="background: linear-gradient(135deg, #0a3d2e, #1a6b4a); color: #f7e9c3;">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // EMAILJS INIT — 🔥 REPLACE WITH YOUR OWN KEYS
+        // ============================================================
+        // 1. Go to https://dashboard.emailjs.com
+        // 2. Create an account (free)
+        // 3. Add an Email Service → Get Service ID
+        // 4. Create an Email Template with variables: to_name, to_email, verification_link
+        // 5. Get your Public Key from API Keys page
+
+        const EMAILJS_PUBLIC_KEY = "YOUR_EMAILJS_PUBLIC_KEY";
+        const EMAILJS_SERVICE_ID = "YOUR_EMAILJS_SERVICE_ID";
+        const EMAILJS_TEMPLATE_ID = "YOUR_EMAILJS_TEMPLATE_ID";
+
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+
+        // ============================================================
+        // DECORATIONS
+        // ============================================================
+        
+        (function spawnEidParticles() {
+            const container = document.getElementById('eid-particles');
+            const symbols = ['\u2726', '\u2727', '\u2022', '\u2605', '\u2606', '\u00B7'];
+            const colors = ['#d4af37', '#f7e9c3', '#1a6b4a', '#e8d5a3', '#0a3d2e', '#ffd700'];
+            for (let i = 0; i < 40; i++) {
+                const el = document.createElement('div');
+                el.className = 'particle';
+                el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                el.style.left = Math.random() * 100 + '%';
+                el.style.width = el.style.height = (4 + Math.random() * 6) + 'px';
+                el.style.color = colors[Math.floor(Math.random() * colors.length)];
+                el.style.fontSize = (8 + Math.random() * 14) + 'px';
+                el.style.animationDuration = (12 + Math.random() * 20) + 's';
+                el.style.animationDelay = (Math.random() * 20) + 's';
+                container.appendChild(el);
+            }
+        })();
+
+        // ============================================================
+        // AUTH CHECK — Redirect only if verified
+        // ============================================================
+        
+        if (localStorage.getItem('loggedInUser') && localStorage.getItem('registeredEmail') && localStorage.getItem('emailVerified') === 'true') {
+            window.location.href = "three.html";
+        }
+
+        // ============================================================
+        // CLOUD SYNC
+        // ============================================================
+
+        const CLOUD_API_URL = "https://api.jsonbin.io/v3/b/6653bb85e41b4d34e4f9b8c2";
+        const API_KEY = "$2a$10$7vR7D4.2bVb3K1Q8f3ZGeO71H/g3rBsnvjR6w/vI6Dve3B2zRvyE.";
+        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+
+        let allGlobalUsers = [];
+        let friendRequests = [];
+        let targetUserEmail = "";
+
+        // Toast notifications
+        const Toast = typeof Swal !== "undefined" ? Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        }) : null;
+
+        async function fetchCloudUsers() {
+            try {
+                const response = await fetch(CLOUD_API_URL + "/latest?_ts=" + Date.now(), {
+                    method: "GET",
+                    mode: "cors",
+                    cache: "no-cache",
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                const resData = await response.json();
+                allGlobalUsers = resData.record.allUsersList || [];
+                friendRequests = resData.record.friendRequests || [];
+                localStorage.setItem('allUsersList', JSON.stringify(allGlobalUsers));
+                console.log("✅ Cloud sync: " + allGlobalUsers.length + " users");
+            } catch (error) {
+                console.error("Cloud Fetch Error: ", error);
+                allGlobalUsers = JSON.parse(localStorage.getItem('allUsersList')) || [];
+            }
+        }
+
+        async function saveCloudUsers() {
+            localStorage.setItem('allUsersList', JSON.stringify(allGlobalUsers));
+            try {
+                const response = await fetch(CLOUD_API_URL, {
+                    method: "PUT",
+                    mode: "cors",
+                    cache: "no-store",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": API_KEY
+                    },
+                    body: JSON.stringify({
+                        friendRequests: friendRequests,
+                        allUsersList: allGlobalUsers
+                    })
+                });
+                if (!response.ok) console.error("Cloud Save Error:", response.status);
+            } catch (error) {
+                console.error("Cloud Save Error: ", error);
+            }
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
+
+        // ============================================================
+        // VERIFICATION FUNCTIONS
+        // ============================================================
+
+        function generateVerificationToken() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function sendVerificationEmail(userName, userEmail, token) {
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+            const verifyLink = `${baseUrl}verify.html?token=${token}&email=${encodeURIComponent(userEmail)}`;
+
+            const templateParams = {
+                to_name: userName,
+                to_email: userEmail,
+                verification_link: verifyLink,
+                message: `Please verify your email address by clicking the link below:`
+            };
+
+            try {
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    EMAILJS_TEMPLATE_ID,
+                    templateParams
+                );
+                console.log("✅ Verification email sent:", response.status);
+                return true;
+            } catch (error) {
+                console.error("❌ Failed to send verification email:", error);
+                return false;
+            }
+        }
+
+        async function resendVerificationEmail() {
+            const email = localStorage.getItem('registeredEmail');
+            const name = localStorage.getItem('loggedInUser');
+            
+            if (!email || !name) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No pending verification found. Please sign up again.' });
+                return;
+            }
+
+            await fetchCloudUsers();
+            const user = allGlobalUsers.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+            
+            if (!user) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'User not found in database.' });
+                return;
+            }
+
+            user.verificationToken = generateVerificationToken();
+            user.emailVerified = false;
+            await saveCloudUsers();
+
+            const sent = await sendVerificationEmail(user.name, user.email, user.verificationToken);
+            if (sent) {
+                Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox for the verification link.' });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Failed', text: 'Could not send email. Check EmailJS settings.' });
+            }
+        }
+
+        function showVerifyNotice(email) {
+            const statusBar = document.getElementById('verify-status-bar');
+            if (!statusBar) return;
+            statusBar.style.display = 'block';
+            statusBar.innerHTML = `
+                <div class="verify-notice">
+                    ⚠️ Please verify your email: <strong>${email}</strong><br>
+                    Didn't receive the email? 
+                    <span class="small-link" onclick="resendVerificationEmail()">Click here to resend</span>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // UI FUNCTIONS
+        // ============================================================
+
+        function toggleForm() {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+            }
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchCloudUsers();
+            requestNotificationPermission();
+            
+            // Show verify notice if user is partially logged in but unverified
+            const email = localStorage.getItem('registeredEmail');
+            const verified = localStorage.getItem('emailVerified');
+            if (email && verified === 'false') {
+                showVerifyNotice(email);
+            }
+        });
+
+        // ============================================================
+        // FORGOT PASSWORD MODAL
+        // ============================================================
+
+        const forgotModal = document.getElementById('forgot-modal');
+        const openForgotBtn = document.getElementById('open-forgot-btn');
+        const closeForgotBtn = document.getElementById('close-forgot-btn');
+        const forgotEmailInput = document.getElementById('forgot-email-input');
+        const findAccountBtn = document.getElementById('find-account-btn');
+        
+        const forgotStep1 = document.getElementById('forgot-step-1');
+        const forgotStep2 = document.getElementById('forgot-step-2');
+        const forgotNewPasswordInput = document.getElementById('forgot-new-password');
+        const saveNewPasswordBtn = document.getElementById('save-new-password-btn');
+
+        openForgotBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotStep1.style.display = 'block';
+            forgotStep2.style.display = 'none';
+            forgotModal.style.display = 'flex';
+            forgotEmailInput.focus();
+        });
+
+        closeForgotBtn.addEventListener('click', () => {
+            forgotModal.style.display = 'none';
+            forgotEmailInput.value = '';
+            forgotNewPasswordInput.value = '';
+            targetUserEmail = "";
+        });
+
+        forgotModal.addEventListener('click', (e) => {
+            if (e.target === forgotModal) {
+                forgotModal.style.display = 'none';
+                forgotEmailInput.value = '';
+                forgotNewPasswordInput.value = '';
+                targetUserEmail = "";
+            }
+        });
+
+        // ============================================================
+        // SIGN UP HANDLER (WITH EMAIL VERIFICATION)
+        // ============================================================
+
+        document.getElementById('form-signup-el').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            const fullName = document.getElementById('signup-name').value.trim();
+            const signupEmail = document.getElementById('signup-email').value.trim().toLowerCase();
+            const signupPhone = document.getElementById('signup-phone').value.trim();
+            const signupPassword = document.getElementById('signup-password').value;
+            
+            // Validation
+            if (!fullName || !signupEmail || !signupPhone || !signupPassword) {
+                Swal.fire({ icon: 'warning', title: 'All fields are required!' });
+                return;
+            }
+            
+            await fetchCloudUsers();
+
+            // Check for duplicate email
+            if (allGlobalUsers.some(user => user.email === signupEmail)) {
+                Swal.fire({ icon: 'error', title: 'Oops...', text: 'This email is already registered!' });
+                return;
+            }
+
+            // Check for duplicate phone
+            if (allGlobalUsers.some(user => user.phone === signupPhone)) {
+                Swal.fire({ icon: 'error', title: 'Oops...', text: 'This phone number is already registered!' });
+                return;
+            }
+
+            // Validate phone
+            const phoneDigits = signupPhone.replace(/\D/g, '');
+            if (phoneDigits.length < 10) {
+                Swal.fire({ icon: 'error', title: 'Invalid Phone', text: 'Please enter a valid phone number with at least 10 digits.' });
+                return;
+            }
+
+            // Validate password
+            if (signupPassword.length < 6) {
+                Swal.fire({ icon: 'error', title: 'Weak Password', text: 'Password must be at least 6 characters long.' });
+                return;
+            }
+
+            // 🔥 Generate verification token
+            const verificationToken = generateVerificationToken();
+
+            // Add user with verification fields
+            allGlobalUsers.push({
+                name: fullName,
+                email: signupEmail,
+                phone: signupPhone,
+                password: signupPassword,
+                photo: DEFAULT_AVATAR,
+                verificationToken: verificationToken,
+                emailVerified: false,
+                createdAt: new Date().toISOString()
+            });
+
+            await saveCloudUsers();
+            
+            // Store in localStorage (partial login)
+            localStorage.setItem('loggedInUser', fullName);
+            localStorage.setItem('registeredEmail', signupEmail);
+            localStorage.setItem('emailVerified', 'false');
+
+            // 🔥 Send verification email
+            const sent = await sendVerificationEmail(fullName, signupEmail, verificationToken);
+
+            if (sent) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Account Created!',
+                    text: 'Please check your email for the verification link before logging in.',
+                    timer: 3000,
+                    showConfirmButton: false
+                }).then(() => {
+                    toggleForm();
+                    document.getElementById('login-email').value = signupEmail;
+                    showVerifyNotice(signupEmail);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Account Created but Email Failed',
+                    text: 'Could not send verification email. Check EmailJS settings.',
+                    timer: 3000,
+                    showConfirmButton: false
+                }).then(() => {
+                    toggleForm();
+                    document.getElementById('login-email').value = signupEmail;
+                    showVerifyNotice(signupEmail);
+                });
+            }
+        });
+
+        // ============================================================
+        // LOGIN HANDLER (BLOCKED UNLESS VERIFIED)
+        // ============================================================
+
+        document.getElementById('form-login-el').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inputEmail = document.getElementById('login-email').value.trim().toLowerCase();
+            const inputPassword = document.getElementById('login-password').value;
+            
+            await fetchCloudUsers();
+
+            const matchedUser = allGlobalUsers.find(user => user.email === inputEmail && user.password === inputPassword);
+            
+            if (matchedUser) {
+                // 🔥 Check if email is verified
+                if (matchedUser.emailVerified !== true) {
+                    localStorage.setItem('loggedInUser', matchedUser.name);
+                    localStorage.setItem('registeredEmail', matchedUser.email);
+                    localStorage.setItem('emailVerified', 'false');
+                    
+                    showVerifyNotice(matchedUser.email);
+                    
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Email Not Verified',
+                        html: `Please verify your email (<strong>${matchedUser.email}</strong>) before logging in.<br><br>
+                               <span style="color:#1a6b4a;cursor:pointer;text-decoration:underline;" onclick="resendVerificationEmail()">
+                               Click here to resend</span>`,
+                        confirmButtonColor: '#0a3d2e'
+                    });
+                    return;
+                }
+
+                // ✅ Email verified — allow login
+                localStorage.setItem('loggedInUser', matchedUser.name);
+                localStorage.setItem('registeredEmail', matchedUser.email);
+                localStorage.setItem('emailVerified', 'true');
+                
+                if (matchedUser.photo) {
+                    localStorage.setItem('userProfilePhoto', matchedUser.photo);
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Logged In!',
+                    text: 'Redirecting to your dashboard...',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = "three.html"; 
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: 'Wrong credentials or account does not exist.',
+                    confirmButtonColor: '#0a3d2e'
+                });
+            }
+        });
+
+        // ============================================================
+        // FORGOT PASSWORD
+        // ============================================================
+
+        findAccountBtn.addEventListener('click', async () => {
+            const emailQuery = forgotEmailInput.value.trim().toLowerCase();
+            if (emailQuery === "") {
+                Swal.fire('Alert', 'Please type your email address.', 'warning');
+                return;
+            }
+
+            await fetchCloudUsers(); 
+
+            const accountFound = allGlobalUsers.find(user => user.email === emailQuery);
+
+            if (accountFound) {
+                targetUserEmail = accountFound.email; 
+                forgotStep1.style.display = 'none';
+                forgotStep2.style.display = 'block';
+                forgotNewPasswordInput.focus();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Account Not Found', text: 'This email is not registered.' });
+            }
+        });
+
+        forgotEmailInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                findAccountBtn.click();
+            }
+        });
+
+        forgotNewPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveNewPasswordBtn.click();
+            }
+        });
+
+        saveNewPasswordBtn.addEventListener('click', async () => {
+            const newPasswordValue = forgotNewPasswordInput.value.trim();
+            
+            if (newPasswordValue === "") {
+                Swal.fire('Alert', 'Password field cannot be empty.', 'warning');
+                return;
+            }
+
+            if (newPasswordValue.length < 6) {
+                Swal.fire('Alert', 'Password must be at least 6 characters.', 'warning');
+                return;
+            }
+
+            let userIndex = allGlobalUsers.findIndex(user => user.email === targetUserEmail);
+
+            if (userIndex !== -1) {
+                allGlobalUsers[userIndex].password = newPasswordValue; 
+                await saveCloudUsers();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Password updated successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    forgotModal.style.display = 'none';
+                    document.getElementById('login-email').value = targetUserEmail;
+                    document.getElementById('login-password').value = '';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

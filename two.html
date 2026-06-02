@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eid Mubarak - Edit Profile</title>
+    <link rel="icon" type="image/png" sizes="100x100" href="WhatsApp Image 2026-05-31 at 3.09.40 AM.jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+     
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', 'Amiri', Arial, sans-serif;
+            background: linear-gradient(160deg, #0a3d2e 0%, #1a6b4a 40%, #e8d5a3 75%, #f7e9c3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ---- Floating Particles ---- */
+        .eid-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.5; }
+            90%  { opacity: 0.3; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ---- Crescent Moon Overlay ---- */
+        .crescent-bg {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 160px;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ---- Lantern Decorations ---- */
+        .lantern-decor {
+            position: fixed;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.07;
+            font-size: 70px;
+        }
+        .lantern-decor.l1 { top: 3%; left: 4%; }
+        .lantern-decor.l2 { top: 3%; right: 4%; }
+        .lantern-decor.l3 { bottom: 4%; left: 6%; }
+        .lantern-decor.l4 { bottom: 4%; right: 6%; }
+
+        /* ---- Floating Eid Greeting ---- */
+        .eid-greeting-float {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #d4af37, #f7e9c3);
+            color: #0a3d2e;
+            padding: 8px 28px;
+            border-radius: 40px;
+            font-family: 'Amiri', serif;
+            font-size: 20px;
+            font-weight: 700;
+            z-index: 100;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+            border: 2px solid #d4af37;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* ============================================================
+           MAIN CARD
+           ============================================================ */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 45px 40px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            width: 460px;
+            max-width: 92%;
+            position: relative;
+            z-index: 10;
+            border: 2px solid rgba(212, 175, 55, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Lantern accents on card corners */
+        .profile-card::before {
+            content: "🏮";
+            position: absolute;
+            top: -16px;
+            left: -10px;
+            font-size: 28px;
+            opacity: 0.25;
+        }
+        .profile-card::after {
+            content: "🏮";
+            position: absolute;
+            bottom: -16px;
+            right: -10px;
+            font-size: 28px;
+            opacity: 0.25;
+        }
+
+        /* Title */
+        .profile-title {
+            font-family: 'Amiri', serif;
+            color: #0a3d2e;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+        }
+        .profile-subtitle {
+            color: #5a6a5a;
+            font-size: 14px;
+            margin: 0 0 28px 0;
+            font-weight: 400;
+        }
+        .profile-subtitle span {
+            color: #d4af37;
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           PHOTO CIRCLE
+           ============================================================ */
+        .circle-frame {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px dashed #d4af37;
+            background: rgba(247, 233, 195, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+
+        .circle-frame:hover {
+            border-color: #1a6b4a;
+            border-style: solid;
+            background: rgba(26, 107, 74, 0.06);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Upload text */
+        .upload-text {
+            color: #1a6b4a;
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            pointer-events: none;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .upload-text .icon {
+            font-size: 32px;
+            margin-bottom: 4px;
+        }
+
+        /* Preview image */
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        /* Hidden file input */
+        #file-input {
+            display: none;
+        }
+
+        /* ============================================================
+           BUTTONS
+           ============================================================ */
+        .buttons-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 34px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.15s ease;
+            display: inline-block;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            min-width: 130px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Delete button — deep red with gold trim */
+        .btn-delete {
+            background: linear-gradient(135deg, #7a2a33, #8b2f3a);
+            color: #f7e9c3;
+            border: 2px solid #d4af37;
+        }
+        .btn-delete:hover {
+            background: linear-gradient(135deg, #8b2f3a, #7a2a33);
+            transform: scale(1.02);
+        }
+
+        /* Get Started button — green with gold trim */
+        .btn-start {
+            background: linear-gradient(135deg, #0a3d2e, #1a6b4a);
+            color: #f7e9c3;
+            border: 2px solid #d4af37;
+        }
+        .btn-start:hover {
+            background: linear-gradient(135deg, #1a6b4a, #0a3d2e);
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(10, 61, 46, 0.3);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 500px) {
+            .profile-card {
+                padding: 30px 20px;
+            }
+            .circle-frame {
+                width: 150px;
+                height: 150px;
+            }
+            .buttons-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            .btn {
+                width: 100%;
+                max-width: 220px;
+            }
+            .eid-greeting-float {
+                font-size: 14px;
+                padding: 6px 16px;
+                top: 10px;
+            }
+            .crescent-bg {
+                font-size: 100px;
+                opacity: 0.025;
+            }
+            .lantern-decor {
+                font-size: 45px;
+                opacity: 0.05;
+            }
+            .profile-title {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Particles -->
+    <div class="eid-particles" id="eid-particles"></div>
+
+    <!-- Crescent Moon -->
+    <div class="crescent-bg">☪</div>
+
+    <!-- Lanterns -->
+    <div class="lantern-decor l1">🏮</div>
+    <div class="lantern-decor l2">🏮</div>
+    <div class="lantern-decor l3">🏮</div>
+    <div class="lantern-decor l4">🏮</div>
+
+    <!-- Floating Eid Greeting -->
+    <div class="eid-greeting-float">✨ Eid Mubarak ✨</div>
+
+    <!-- ============================================================
+         MAIN PROFILE CARD
+         ============================================================ -->
+    <div class="profile-card">
+        <h1 class="profile-title">Set Your Profile</h1>
+        <p class="profile-subtitle">
+            <span>☪</span> Upload a photo to complete your Eid profile <span>☪</span>
+        </p>
+
+        <!-- Photo Upload Circle -->
+        <label for="file-input" class="circle-frame" id="drop-zone">
+            <span class="upload-text" id="upload-label">
+                <span class="icon">📸</span>
+                Upload Photo
+            </span>
+            <img src="" alt="Preview" class="preview-img" id="image-preview">
+        </label>
+        
+        <input type="file" id="file-input" accept="image/*">
+
+        <!-- Buttons -->
+        <div class="buttons-group">
+            <button class="btn btn-delete" id="delete-btn">🗑 Delete</button>
+            
+            <a href="three.html" target="_blank" class="btn btn-start" id="start-btn">
+                Get Started 🚀
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // ---- Generate Eid floating particles ----
+        (function spawnEidParticles() {
+            const container = document.getElementById('eid-particles');
+            const symbols = ['✦', '✧', '•', '★', '☆', '·'];
+            const colors = ['#d4af37', '#f7e9c3', '#1a6b4a', '#e8d5a3', '#0a3d2e', '#ffd700'];
+            for (let i = 0; i < 40; i++) {
+                const el = document.createElement('div');
+                el.className = 'particle';
+                el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                el.style.left = Math.random() * 100 + '%';
+                el.style.width = el.style.height = (4 + Math.random() * 6) + 'px';
+                el.style.color = colors[Math.floor(Math.random() * colors.length)];
+                el.style.fontSize = (8 + Math.random() * 14) + 'px';
+                el.style.animationDuration = (12 + Math.random() * 20) + 's';
+                el.style.animationDelay = (Math.random() * 20) + 's';
+                container.appendChild(el);
+            }
+        })();
+
+        // ---- Original script preserved ----
+        const fileInput = document.getElementById('file-input');
+        const imagePreview = document.getElementById('image-preview');
+        const uploadLabel = document.getElementById('upload-label');
+        const deleteBtn = document.getElementById('delete-btn');
+        const startBtn = document.getElementById('start-btn');
+
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', requestNotificationPermission);
+
+        // 1. Upload and preview image
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0]; 
+            
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result; 
+                    imagePreview.style.display = 'block'; 
+                    uploadLabel.style.display = 'none'; 
+                }
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 2. Delete button
+        deleteBtn.addEventListener('click', function() {
+            fileInput.value = "";
+            imagePreview.src = "";
+            imagePreview.style.display = 'none';
+            uploadLabel.style.display = 'flex'; // was 'block', now 'flex' for the icon+text layout
+            localStorage.removeItem('userProfilePhoto');
+        });
+
+        // 3. Save and proceed
+        startBtn.addEventListener('click', function(event) {
+            if (fileInput.files.length === 0 || imagePreview.style.display === 'none') {
+                event.preventDefault();
+                alert('Please upload a photo first to continue!');
+            } else {
+                localStorage.setItem('userProfilePhoto', imagePreview.src);
+            }
+        });
+    </script>
+
+</body>
+</html>
